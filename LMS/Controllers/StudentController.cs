@@ -76,8 +76,24 @@ namespace LMS.Controllers
         /// <param name="uid">The uid of the student</param>
         /// <returns>The JSON array</returns>
         public IActionResult GetMyClasses(string uid)
-        {           
-            return Json(null);
+        {
+            var query =
+                from co in db.Courses
+                join cl in db.Classes on co.CourseNum equals cl.CourseNum
+                join e in db.EnrollmentGrades on cl.CId equals e.CId
+                join s in db.Students on e.UId equals s.UId
+                where s.UId == uid
+                select new
+                {
+                    subject = co.Subject,
+                    number = co.CourseNum,
+                    name = co.Name,
+                    season = cl.Semester,
+                    //year = cl.Year,
+                    grade = e.Grade == null ? "--" : e.Grade
+                };
+
+            return Json(query.ToArray());
         }
 
         /// <summary>

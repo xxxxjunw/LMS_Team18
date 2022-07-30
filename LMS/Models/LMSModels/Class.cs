@@ -19,6 +19,7 @@ namespace LMS.Models.LMSModels
         public DateOnly? StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
         public string? ProfessorId { get; set; }
+        public uint? Year { get; set; }
 
         public virtual Course C { get; set; } = null!;
         public virtual Professor? Professor { get; set; }

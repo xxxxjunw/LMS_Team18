@@ -129,6 +129,9 @@ namespace LMS.Models.LMSModels
 
                 entity.HasIndex(e => e.ProfessorId, "ProfessorID");
 
+                entity.HasIndex(e => new { e.Semester, e.Year, e.CourseNum }, "Semester")
+                    .IsUnique();
+
                 entity.Property(e => e.CId)
                     .HasColumnType("int(11)")
                     .HasColumnName("cID");
@@ -146,6 +149,8 @@ namespace LMS.Models.LMSModels
                     .HasColumnName("ProfessorID");
 
                 entity.Property(e => e.Semester).HasColumnType("enum('Spring','Fall','Summer')");
+
+                entity.Property(e => e.Year).HasColumnType("int(10) unsigned");
 
                 entity.HasOne(d => d.Professor)
                     .WithMany(p => p.Classes)
