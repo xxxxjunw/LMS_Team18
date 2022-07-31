@@ -192,19 +192,20 @@ namespace LMS.Controllers
                 from cl in db.Classes
                 where cl.Year == year && cl.Semester == season && cl.Location == location
                 select new { start = cl.StartDate, end = cl.EndDate };
-            var intervals = query2.ToArray();
-            foreach (var interval in intervals)
-            {
-                if (interval.start < DateOnly.FromDateTime(end) && interval.end > DateOnly.FromDateTime(start))
-                {
-                    return Json(new { success = false });
-                }
-            }
+            //var intervals = query2.ToArray();
+            //foreach (var interval in intervals)
+            //{
+            //    if (interval.start > DateOnly.FromDateTime(end) || interval.end > DateOnly.FromDateTime(start))
+            //    {
+            //        return Json(new { success = false });
+            //    }
+            //}
 
             Class c = new Class();
             c.Year = (uint)year;
             c.Semester = season;
             c.Location = location;
+            c.CatalogId = 1111;
             c.StartDate = DateOnly.FromDateTime(start);
             c.EndDate = DateOnly.FromDateTime(end);
             c.ProfessorId = instructor;

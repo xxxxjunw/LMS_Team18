@@ -16,8 +16,9 @@ ViewData["Title"] = "Catalog";
     //  LoadData();
     //});
 
-    function MakeDepartmentTable() {
-
+    function MakeDepartmentTable(data) {
+      
+           
       var topDiv = document.createElement("div");
       topDiv.setAttribute("class", "col-md-12");
 
@@ -39,7 +40,6 @@ ViewData["Title"] = "Catalog";
       panelDiv.appendChild(bodyPanel);
 
       topDiv.appendChild(panelDiv);
-
       return topDiv;
     }
 
@@ -50,32 +50,33 @@ ViewData["Title"] = "Catalog";
       title.appendChild(document.createTextNode(name));
       heading.appendChild(title);
 
+
     }
 
     function PopulateTable(tbl, courses, subject) {
-      var newBody = document.createElement("tbody");
+        var newBody = document.createElement("tbody");
+        $.each(courses, function (i, item) {
+            var tr = document.createElement("tr");
 
-      courses.sort(function (a, b) {
-        return parseInt(a.number) - parseInt(b.number);
+            var td = document.createElement("td");
+            var a = document.createElement("a");
+            if (i == "number") {
+                a.setAttribute("href", "/Student/ClassListings/?subject=" + subject + "&num=" + item);
+                a.appendChild(document.createTextNode(item));
+                td.appendChild(a);
+                tr.appendChild(td);
+            } else if (i == "cname") {
 
-      });
+                var td = document.createElement("td");
+                td.appendChild(document.createTextNode(item));
+                tr.appendChild(td);
+            }
 
-      $.each(courses, function (i, item) {
-        var tr = document.createElement("tr");
+            newBody.appendChild(tr);
+        })
 
-        var td = document.createElement("td");
-        var a = document.createElement("a");
-        a.setAttribute("href", "/Student/ClassListings/?subject=" + subject + "&num=" + item.number);
-        a.appendChild(document.createTextNode(item.number));
-        td.appendChild(a);
-        tr.appendChild(td);
-
-        var td = document.createElement("td");
-        td.appendChild(document.createTextNode(item.cname));
-        tr.appendChild(td);
-
-        newBody.appendChild(tr);
-      });
+        
+      //});
 
       tbl.appendChild(newBody);
 
@@ -92,10 +93,12 @@ ViewData["Title"] = "Catalog";
         dataType: 'json',
         success: function (data, status) {
           //alert(JSON.stringify(data));
+           // { "subject": "cs", "dname": "computer science", "courses": { "number": 2011, "cname": "elec-cs1" } }
           $.each(data, function (i, item) {
-            var newDiv = MakeDepartmentTable();
+                
+            var newDiv = MakeDepartmentTable(data);
             SetDepartmentName(newDiv, item.subject + ": " + item.dname);
-            var newTable = newDiv.getElementsByClassName("table")[0];
+              var newTable = newDiv.getElementsByClassName("table")[0];
             PopulateTable(newTable, item.courses, item.subject);
 
             prevNode.parentNode.insertBefore(newDiv, prevNode.nextSibling);

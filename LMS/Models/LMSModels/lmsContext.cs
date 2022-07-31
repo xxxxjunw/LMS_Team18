@@ -156,12 +156,6 @@ namespace LMS.Models.LMSModels
                     .WithMany(p => p.Classes)
                     .HasForeignKey(d => d.ProfessorId)
                     .HasConstraintName("Classes_ibfk_2");
-
-                entity.HasOne(d => d.C)
-                    .WithMany(p => p.Classes)
-                    .HasForeignKey(d => new { d.CatalogId, d.CourseNum })
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("Classes_ibfk_1");
             });
 
             modelBuilder.Entity<Course>(entity =>
@@ -170,10 +164,11 @@ namespace LMS.Models.LMSModels
                     .HasName("PRIMARY")
                     .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
 
-                entity.HasIndex(e => e.Subject, "Subject");
+                entity.HasIndex(e => new { e.Subject, e.CourseNum }, "Subject")
+                    .IsUnique();
 
                 entity.Property(e => e.CatalogId)
-                    .HasColumnType("int(5) unsigned zerofill")
+                    .HasColumnType("int(5)")
                     .HasColumnName("CatalogID");
 
                 entity.Property(e => e.CourseNum).HasColumnType("int(4) unsigned zerofill");

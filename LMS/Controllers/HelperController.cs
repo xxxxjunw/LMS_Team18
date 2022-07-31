@@ -17,7 +17,7 @@ namespace LMS.Controllers
                     && season == cl.Semester && year == cl.Year
                 select cl.CId;
 
-            return query.ToArray()[0];
+            return query.ToArray().Length == 0? 0 : query.ToArray()[0];
         }
 
         public static void updateGrade(string uid, int classID, LMSContext db)

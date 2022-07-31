@@ -21,7 +21,6 @@ namespace LMS.Models.LMSModels
         public string? ProfessorId { get; set; }
         public uint? Year { get; set; }
 
-        public virtual Course C { get; set; } = null!;
         public virtual Professor? Professor { get; set; }
         public virtual ICollection<AssignmentCategory> AssignmentCategories { get; set; }
         public virtual ICollection<EnrollmentGrade> EnrollmentGrades { get; set; }

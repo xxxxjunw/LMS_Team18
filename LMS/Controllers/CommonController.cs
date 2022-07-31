@@ -52,18 +52,17 @@ namespace LMS.Controllers
         /// <returns>The JSON array</returns>
         public IActionResult GetCatalog()
         {
+            Console.WriteLine("Now inside of student cat");
             var query =
                 from d in db.Departments
+                join c in db.Courses
+                on d.Subject equals c.Subject
                 select new
                 {
                     subject = d.Subject,
                     dname = d.Name,
-                    courses =
-                        from c in db.Courses
-                        where c.Subject == d.Subject
-                        select new { number = c.CourseNum, cname = c.Name }
+                    courses = new { number = c.CourseNum, cname = c.Name }
                 };
-
             return Json(query.ToArray());
         }
 
