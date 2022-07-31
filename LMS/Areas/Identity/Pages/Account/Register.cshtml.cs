@@ -231,6 +231,8 @@ namespace LMS.Areas.Identity.Pages.Account
             user.FirstName = firstName;
             user.LastName = lastName;
             user.Dob = DateOnly.FromDateTime(DOB);
+            db.Users.Add(user);
+            db.SaveChanges();
 
             if (role == "Administrator")
             {
@@ -240,6 +242,8 @@ namespace LMS.Areas.Identity.Pages.Account
                 a.FirstName = firstName;
                 a.LastName = lastName;
                 db.Administrators.Add(a);
+                db.SaveChanges();
+
             }
             else if (role == "Professor")
             {
@@ -249,6 +253,8 @@ namespace LMS.Areas.Identity.Pages.Account
                 p.LastName = lastName;
                 p.Department = departmentAbbrev;
                 db.Professors.Add(p);
+                db.SaveChanges();
+
             }
             else
             {
@@ -259,8 +265,9 @@ namespace LMS.Areas.Identity.Pages.Account
                 s.LastName = lastName;
                 s.Subject = departmentAbbrev;
                 db.Students.Add(s);
+                db.SaveChanges();
+
             }
-            db.SaveChanges();
             return number.ToString();
         }
 
