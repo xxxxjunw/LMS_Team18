@@ -11,7 +11,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using LMS.Models;
-
+using LMS.Models.LMSModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -189,11 +189,72 @@ namespace LMS.Areas.Identity.Pages.Account
         /// <param name="DOB"></param>
         /// <param name="departmentAbbrev"></param>
         /// <param name="role"></param>
+        protected LMSContext db;
         string CreateNewUser(string firstName, string lastName, DateTime DOB, string departmentAbbrev, string role)
         {
 
-            //TODO FILL ME IN
-            return "ASDF";
+            string uid = "";
+
+            Random rnd = new Random();
+            int number;
+
+            while (true)
+            {
+                number = rnd.Next(10000000);
+                var query1 =
+                    from s in db.Students
+                    where s.UId == number.ToString()
+                    select s;
+                var query2 =
+                    from s in db.Administrators
+                    where s.UId == number.ToString()
+                    select s;
+                var query3 =
+                    from s in db.Professors
+                    where s.UId == number.ToString()
+                    select s;
+                // Keep generating a number between 0 and 9999999 until there're no
+                // duplicate uids in the Professor, Student and the Administrator table.
+                if (query1.Count() == 0 && query2.Count() == 0 && query3.Count() == 0)
+                {
+                    break;
+                }
+            }
+
+            User user = new User();
+            user.UId = uid;
+            user.FirstName = firstName;
+            user.LastName = lastName;
+            user.Dob = DateOnly.FromDateTime(DOB);
+
+            if (role == "Administrator")
+            {
+                Administrator a = new Administrator();
+                a.UId = uid;
+                a.Role = "Administrator";
+                a.FirstName = firstName;
+                a.LastName = lastName;
+                db.Administrators.Add(a);
+            }
+            else if (role == "Professor")
+            {
+                Professor p = new Professor();
+                p.UId = uid;
+                p.FirstName = firstName;
+                p.LastName = lastName;
+                p.Department = departmentAbbrev;
+                db.Professors.Add(p);
+            }
+            else
+            {
+                Student s = new Student();
+                s.UId = uid;
+                s.FirstName = firstName;
+                s.LastName = lastName;
+                s.Subject = departmentAbbrev;
+                db.Students.Add(s);
+            }
+            return uid;
         }
 
         /*******End code to modify********/
