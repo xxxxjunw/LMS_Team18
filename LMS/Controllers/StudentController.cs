@@ -89,7 +89,7 @@ namespace LMS.Controllers
                     number = co.CourseNum,
                     name = co.Name,
                     season = cl.Semester,
-                    //year = cl.Year,
+                    year = cl.Year,
                     grade = e.Grade == null ? "--" : e.Grade
                 };
 
@@ -111,8 +111,30 @@ namespace LMS.Controllers
         /// <param name="uid"></param>
         /// <returns>The JSON array</returns>
         public IActionResult GetAssignmentsInClass(string subject, int num, string season, int year, string uid)
-        {            
-            return Json(null);
+        {
+            var classID = HelperController.getClassID(subject, num, season, year, db);
+
+            var query =
+                from ac in db.AssignmentCategories
+                join a in db.Assignments on ac.Id equals a.CId
+                where classID == ac.CId
+                select a;
+
+            var query1 =
+                from q in query
+                join s in db.Submissions
+                on new { A = q.AId, B = uid } equals new { A = s.AId, B = s.UId }
+                into join1
+                from j in join1.DefaultIfEmpty()
+                select new
+                {
+                    aname = q.Name,
+                    cname = q.CIdNavigation.Name,
+                    due = q.Due,
+                    score = j == null ? null : (int?)j.Score
+                };
+
+            return Json(query1.ToArray());
         }
 
 
@@ -136,8 +158,42 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}</returns>
         public IActionResult SubmitAssignmentText(string subject, int num, string season, int year,
           string category, string asgname, string uid, string contents)
-        {           
-            return Json(new { success = false });
+        {
+            var classID = HelperController.getClassID(subject, num, season, year, db);
+
+            // To get the AssignmentID
+            var query =
+                from ac in db.AssignmentCategories
+                join a in db.Assignments on ac.Id equals a.CId
+                where classID == ac.CId && category == ac.Name && asgname == a.Name
+                select a;
+            int assignmentID = query.ToArray()[0].AId;
+
+            // To see if the student has already submitted for the assignment
+            var query1 =
+                from s in db.Submissions
+                where s.AId == assignmentID && uid == s.UId
+                select s;
+            // if he has, update the row
+            if (query1.Count() == 1)
+            {
+                query1.ToArray()[0].Contents = contents;
+                query1.ToArray()[0].Score = 0;
+            }
+            else
+            // if he hasn't, create a new row
+            {
+                Submission s = new Submission();
+                s.UId = uid;
+                s.AId = assignmentID;
+                s.Score = 0;
+                s.Contents = contents;
+                db.Submissions.Add(s);
+            }
+
+            db.SaveChanges();
+
+            return Json(new { success = true });
         }
 
 
@@ -152,8 +208,30 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = {true/false}. 
         /// false if the student is already enrolled in the class, true otherwise.</returns>
         public IActionResult Enroll(string subject, int num, string season, int year, string uid)
-        {          
-            return Json(new { success = false});
+        {
+            var classID = HelperController.getClassID(subject, num, season, year,db);
+
+            // To see if the student has already enrolled in that class
+            var query1 =
+                from e in db.EnrollmentGrades
+                where e.CId == classID && e.UId == uid
+                select e;
+            // if he has already enrolled in the class, return false
+            if (query1.Count() > 0)
+            {
+                return Json(new { success = false });
+            }
+            else
+            // otherwise, create a new row
+            {
+                EnrollmentGrade e = new EnrollmentGrade();
+                e.UId = uid;
+                e.CId = classID;
+                e.Grade = "--";
+                db.EnrollmentGrades.Add(e);
+                db.SaveChanges();
+                return Json(new { success = true });
+            }
         }
 
 
@@ -170,11 +248,47 @@ namespace LMS.Controllers
         /// <param name="uid">The uid of the student</param>
         /// <returns>A JSON object containing a single field called "gpa" with the number value</returns>
         public IActionResult GetGPA(string uid)
-        {            
-            return Json(null);
+        {
+            var map = new Dictionary<string, double>
+            {
+                { "A", 4.0 },
+                { "A-", 3.7 },
+                { "B+", 3.3 },
+                { "B", 3.0 },
+                { "B-", 2.7 },
+                { "C+", 2.3 },
+                { "C", 2.0 },
+                { "C-", 1.7 },
+                { "D+", 1.3 },
+                { "D", 1.0 },
+                { "D-", 0.7 },
+                { "E", 0.0 }
+            };
+
+            var allGrades = (from e in db.EnrollmentGrades where uid == e.UId select e.Grade).ToArray();
+
+            double totalGPA = 0.0;
+            int count = 0;
+            foreach (var grade in allGrades)
+            {
+                if (grade != "--")
+                {
+                    totalGPA += map[grade];
+                    count++;
+                }
+            }
+
+            // count == 0 means the student hasn't enrolled in any class
+            //            or he hasn't received grades from any class he enrolled in
+            if (count == 0)
+                return Json(new { gpa = 0.0 });
+
+            return Json(new { gpa = totalGPA / count });
         }
-                
+
         /*******End code to modify********/
+
+        
 
     }
 }
