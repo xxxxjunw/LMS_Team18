@@ -52,8 +52,23 @@ namespace LMS.Controllers
         /// false if the department already exists, true otherwise.</returns>
         public IActionResult CreateDepartment(string subject, string name)
         {
-            
-            return Json(new { success = false});
+
+            var query =
+                from d in db.Departments
+                where subject == d.Subject && name == d.Name 
+                select d;
+            // if it exists, return false
+            if (query.Count() > 0)
+                return Json(new { success = false });
+
+            // if it doesn't exist, create a new course
+            Department dept = new Department();
+            dept.Subject = subject;
+            dept.Name = name;
+            db.Departments.Add(dept);
+            db.SaveChanges();
+
+            return Json(new { success = true });
         }
 
 
@@ -67,8 +82,17 @@ namespace LMS.Controllers
         /// <returns>The JSON result</returns>
         public IActionResult GetCourses(string subject)
         {
-            
-            return Json(null);
+
+            var query =
+                from c in db.Courses
+                where c.Subject == subject
+                select new
+                {
+                    number = c.CourseNum,
+                    name = c.Name
+                };
+
+            return Json(query.ToArray());
         }
 
         /// <summary>
@@ -82,9 +106,19 @@ namespace LMS.Controllers
         /// <returns>The JSON result</returns>
         public IActionResult GetProfessors(string subject)
         {
-            
-            return Json(null);
-            
+
+            var query =
+                from p in db.Professors
+                where p.Department == subject
+                select new
+                {
+                    lname = p.FirstName,
+                    fname = p.LastName,
+                    uid = p.UId
+                };
+
+            return Json(query.ToArray());
+
         }
 
 
@@ -99,8 +133,24 @@ namespace LMS.Controllers
         /// <returns>A JSON object containing {success = true/false}.
         /// false if the course already exists, true otherwise.</returns>
         public IActionResult CreateCourse(string subject, int number, string name)
-        {           
-            return Json(new { success = false });
+        {
+            var query =
+                from co in db.Courses
+                where subject == co.Subject && number == co.CourseNum && name == co.Name
+                select co;
+            // if it exists, return false
+            if (query.Count() > 0)
+                return Json(new { success = false });
+
+            // if it doesn't exist, create a new course
+            Course c = new Course();
+            c.Subject = subject;
+            c.Name = name;
+            c.CourseNum = (uint)number;
+            db.Courses.Add(c);
+            db.SaveChanges();
+
+            return Json(new { success = true });
         }
 
 
@@ -122,8 +172,47 @@ namespace LMS.Controllers
         /// a Class offering of the same Course in the same Semester,
         /// true otherwise.</returns>
         public IActionResult CreateClass(string subject, int number, string season, int year, DateTime start, DateTime end, string location, string instructor)
-        {            
-            return Json(new { success = false});
+        {
+            var query =
+                from co in db.Courses
+                where subject == co.Subject && number == co.CourseNum
+                select co;
+            uint courseID = query.ToArray()[0].CourseNum;
+
+            // To see if there is already a class offering of the same course in the same semester
+            var query1 =
+                from cl in db.Classes
+                where cl.CourseNum == courseID && cl.Year == year && cl.Semester == season
+                select cl;
+            if (query1.Count() > 0)
+                return Json(new { success = false });
+
+            // To see if the time clashes with another class
+            var query2 =
+                from cl in db.Classes
+                where cl.Year == year && cl.Semester == season && cl.Location == location
+                select new { start = cl.StartDate, end = cl.EndDate };
+            var intervals = query2.ToArray();
+            foreach (var interval in intervals)
+            {
+                if (interval.start < DateOnly.FromDateTime(end) && interval.end > DateOnly.FromDateTime(start))
+                {
+                    return Json(new { success = false });
+                }
+            }
+
+            Class c = new Class();
+            c.Year = (uint)year;
+            c.Semester = season;
+            c.Location = location;
+            c.StartDate = DateOnly.FromDateTime(start);
+            c.EndDate = DateOnly.FromDateTime(end);
+            c.ProfessorId = instructor;
+            c.CourseNum = courseID;
+            db.Classes.Add(c);
+            db.SaveChanges();
+
+            return Json(new { success = true });
         }
 
 
