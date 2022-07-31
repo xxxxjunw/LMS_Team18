@@ -189,11 +189,16 @@ namespace LMS.Areas.Identity.Pages.Account
         /// <param name="DOB"></param>
         /// <param name="departmentAbbrev"></param>
         /// <param name="role"></param>
-        protected LMSContext db;
+        protected LMSContext db = new LMSContext();
         string CreateNewUser(string firstName, string lastName, DateTime DOB, string departmentAbbrev, string role)
         {
+            Console.WriteLine("Nigel: ");
+            Console.WriteLine("F: " + firstName);
+            Console.WriteLine("L: " + lastName);
+            Console.WriteLine(DOB.ToString());
+            Console.WriteLine(departmentAbbrev);
+            Console.WriteLine(role);
 
-            string uid = "";
 
             Random rnd = new Random();
             int number;
@@ -206,13 +211,13 @@ namespace LMS.Areas.Identity.Pages.Account
                     where s.UId == number.ToString()
                     select s;
                 var query2 =
-                    from s in db.Administrators
-                    where s.UId == number.ToString()
-                    select s;
+                    from a in db.Administrators
+                    where a.UId == number.ToString()
+                    select a;
                 var query3 =
-                    from s in db.Professors
-                    where s.UId == number.ToString()
-                    select s;
+                    from p in db.Professors
+                    where p.UId == number.ToString()
+                    select p;
                 // Keep generating a number between 0 and 9999999 until there're no
                 // duplicate uids in the Professor, Student and the Administrator table.
                 if (query1.Count() == 0 && query2.Count() == 0 && query3.Count() == 0)
@@ -222,7 +227,7 @@ namespace LMS.Areas.Identity.Pages.Account
             }
 
             User user = new User();
-            user.UId = uid;
+            user.UId = number.ToString();
             user.FirstName = firstName;
             user.LastName = lastName;
             user.Dob = DateOnly.FromDateTime(DOB);
@@ -230,7 +235,7 @@ namespace LMS.Areas.Identity.Pages.Account
             if (role == "Administrator")
             {
                 Administrator a = new Administrator();
-                a.UId = uid;
+                a.UId = number.ToString();
                 a.Role = "Administrator";
                 a.FirstName = firstName;
                 a.LastName = lastName;
@@ -239,7 +244,7 @@ namespace LMS.Areas.Identity.Pages.Account
             else if (role == "Professor")
             {
                 Professor p = new Professor();
-                p.UId = uid;
+                p.UId = number.ToString();
                 p.FirstName = firstName;
                 p.LastName = lastName;
                 p.Department = departmentAbbrev;
@@ -247,14 +252,16 @@ namespace LMS.Areas.Identity.Pages.Account
             }
             else
             {
+                Console.WriteLine("Nigel is creating student");
                 Student s = new Student();
-                s.UId = uid;
+                s.UId = number.ToString();
                 s.FirstName = firstName;
                 s.LastName = lastName;
                 s.Subject = departmentAbbrev;
                 db.Students.Add(s);
             }
-            return uid;
+            db.SaveChanges();
+            return number.ToString();
         }
 
         /*******End code to modify********/

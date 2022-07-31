@@ -88,7 +88,7 @@ namespace LMS.Controllers
 
         private static string ScoreToGrade(double score)
         {
-            if (score >= 93)
+            if (score >= 92)
                 return "A";
             else if (score >= 90)
                 return "A-";

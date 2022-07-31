@@ -32,7 +32,7 @@ namespace LMS.Models.LMSModels
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql("name=LMS:LMSConnectionString", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.1.48-mariadb"));
+                optionsBuilder.UseMySql("database=Team18Library;uid=u1364466;password=newpassword;server=atr.eng.utah.edu", Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.1.48-mariadb"));
             }
         }
 
@@ -264,8 +264,6 @@ namespace LMS.Models.LMSModels
                 entity.HasKey(e => e.UId)
                     .HasName("PRIMARY");
 
-                entity.HasIndex(e => e.Major, "Major");
-
                 entity.HasIndex(e => e.Subject, "Subject");
 
                 entity.Property(e => e.UId)
@@ -275,8 +273,6 @@ namespace LMS.Models.LMSModels
                 entity.Property(e => e.FirstName).HasMaxLength(100);
 
                 entity.Property(e => e.LastName).HasMaxLength(100);
-
-                entity.Property(e => e.Major).HasMaxLength(4);
 
                 entity.Property(e => e.Subject).HasMaxLength(4);
 
