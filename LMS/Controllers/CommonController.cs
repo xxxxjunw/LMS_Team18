@@ -30,8 +30,11 @@ namespace LMS.Controllers
         /// </summary>
         /// <returns>The JSON array</returns>
         public IActionResult GetDepartments()
-        {            
-            return Json(null);
+        {
+            var query =
+                from d in db.Departments
+                select new { name = d.Name, subject = d.Subject };
+            return Json(query.ToArray());
         }
 
 
@@ -48,8 +51,20 @@ namespace LMS.Controllers
         /// </summary>
         /// <returns>The JSON array</returns>
         public IActionResult GetCatalog()
-        {            
-            return Json(null);
+        {
+            var query =
+                from d in db.Departments
+                select new
+                {
+                    subject = d.Subject,
+                    dname = d.Name,
+                    courses =
+                        from c in db.Courses
+                        where c.Subject == d.Subject
+                        select new { number = c.CourseNum, cname = c.Name }
+                };
+
+            return Json(query.ToArray());
         }
 
         /// <summary>
@@ -67,9 +82,26 @@ namespace LMS.Controllers
         /// <param name="number">The course number, as in 5530</param>
         /// <returns>The JSON array</returns>
         public IActionResult GetClassOfferings(string subject, int number)
-        {            
-            return Json(null);
+        {
+            var query =
+                from co in db.Courses
+                join cl in db.Classes on co.CourseNum equals cl.CourseNum
+                join p in db.Professors on cl.ProfessorId equals p.UId
+                where co.Subject == subject && co.CourseNum == number
+                select new
+                {
+                    season = cl.Semester,
+                    year = cl.Year,
+                    location = cl.Location,
+                    start = cl.StartDate,
+                    end = cl.EndDate,
+                    fname = p.FirstName,
+                    lname = p.LastName
+                };
+
+            return Json(query.ToArray());
         }
+        
 
         /// <summary>
         /// This method does NOT return JSON. It returns plain text (containing html).
@@ -84,10 +116,28 @@ namespace LMS.Controllers
         /// <param name="asgname">The name of the assignment in the category</param>
         /// <returns>The assignment contents</returns>
         public IActionResult GetAssignmentContents(string subject, int num, string season, int year, string category, string asgname)
-        {            
-            return Content("");
-        }
+        {
+            var classID = getClassID(subject, num, season, year);
 
+            var query =
+                from ac in db.AssignmentCategories
+                join a in db.Assignments on ac.CId equals a.CId
+                where ac.CId == classID && ac.Name == category && a.Name == asgname
+                select a.Contents;
+
+            return Content(query.ToArray()[0]);
+        }
+        public int getClassID(string subject, int num, string season, int year)
+        {
+            var query =
+                from co in db.Courses
+                join cl in db.Classes on co.CourseNum equals cl.CourseNum
+                where subject == co.Subject && num == co.CourseNum
+                    && season == cl.Semester && year == cl.Year
+                select cl.CId;
+
+            return query.ToArray()[0];
+        }
 
         /// <summary>
         /// This method does NOT return JSON. It returns plain text (containing html).
@@ -104,8 +154,21 @@ namespace LMS.Controllers
         /// <param name="uid">The uid of the student who submitted it</param>
         /// <returns>The submission text</returns>
         public IActionResult GetSubmissionText(string subject, int num, string season, int year, string category, string asgname, string uid)
-        {            
-            return Content("");
+        {
+            var classID = getClassID(subject, num, season, year);
+
+            var query =
+                from ac in db.AssignmentCategories
+                join a in db.Assignments on ac.Id equals a.CId
+                join s in db.Submissions on a.AId equals s.AId
+                where ac.CId == classID && ac.Name == category
+                    && a.Name == asgname && uid == s.UId
+                select s.Contents;
+
+            if (query.Count() == 0)
+                return Content("");
+
+            return Content(query.ToArray()[0]);
         }
 
 
@@ -126,7 +189,37 @@ namespace LMS.Controllers
         /// or an object containing {success: false} if the user doesn't exist
         /// </returns>
         public IActionResult GetUser(string uid)
-        {           
+        {
+            var query =
+                from s in db.Students
+                join d in db.Departments on s.Subject equals d.Subject
+                where uid == s.UId
+                select new { fname = s.FirstName, lname = s.LastName, uid, department = d.Name };
+            if (query.Count() == 1)
+                return Json(query.ToArray()[0]);
+
+            // Check if the user is a professor
+            query =
+                from p in db.Professors
+                join d in db.Departments
+                on p.Department equals d.Subject
+                where uid == p.UId
+                select new { fname = p.FirstName, lname = p.LastName, uid, department = d.Name };
+            if (query.Count() == 1)
+                return Json(query.ToArray()[0]);
+
+            // Check if the user is an administrator
+            var query1 =
+                from a in db.Administrators
+                where uid == a.UId
+                select new { fname = a.FirstName, lname = a.LastName, uid };
+            if (query.Count() == 1)
+            {
+                return Json(query1.ToArray()[0]);
+            }
+
+            // If the uid doesn't show up in the three tables,
+            // that means the user doesn't exist.
             return Json(new { success = false });
         }
 
