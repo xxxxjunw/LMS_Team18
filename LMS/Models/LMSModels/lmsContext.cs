@@ -72,7 +72,6 @@ namespace LMS.Models.LMSModels
 
                 entity.Property(e => e.AId)
                     .HasColumnType("int(11)")
-                    .ValueGeneratedNever()
                     .HasColumnName("aID");
 
                 entity.Property(e => e.CId)
@@ -91,7 +90,7 @@ namespace LMS.Models.LMSModels
                     .WithMany(p => p.Assignments)
                     .HasForeignKey(d => d.CId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("Assignments_ibfk_2");
+                    .HasConstraintName("Assignments_ibfk_1");
             });
 
             modelBuilder.Entity<AssignmentCategory>(entity =>
@@ -160,15 +159,13 @@ namespace LMS.Models.LMSModels
 
             modelBuilder.Entity<Course>(entity =>
             {
-                entity.HasKey(e => new { e.CatalogId, e.CourseNum })
-                    .HasName("PRIMARY")
-                    .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+                entity.HasNoKey();
 
                 entity.HasIndex(e => new { e.Subject, e.CourseNum }, "Subject")
                     .IsUnique();
 
                 entity.Property(e => e.CatalogId)
-                    .HasColumnType("int(5)")
+                    .HasColumnType("int(5) unsigned")
                     .HasColumnName("CatalogID");
 
                 entity.Property(e => e.CourseNum).HasColumnType("int(4) unsigned zerofill");
@@ -178,7 +175,7 @@ namespace LMS.Models.LMSModels
                 entity.Property(e => e.Subject).HasMaxLength(4);
 
                 entity.HasOne(d => d.SubjectNavigation)
-                    .WithMany(p => p.Courses)
+                    .WithMany()
                     .HasForeignKey(d => d.Subject)
                     .HasConstraintName("Courses_ibfk_1");
             });

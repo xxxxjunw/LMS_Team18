@@ -8,7 +8,7 @@ namespace LMS.Models.LMSModels
         public uint CourseNum { get; set; }
         public string? Name { get; set; }
         public string? Subject { get; set; }
-        public int CatalogId { get; set; }
+        public uint CatalogId { get; set; }
 
         public virtual Department? SubjectNavigation { get; set; }
     }

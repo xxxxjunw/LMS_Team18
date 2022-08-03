@@ -175,7 +175,7 @@ namespace LMS.Controllers
         {
             var query =
                 from co in db.Courses
-                where subject == co.Subject && number == co.CourseNum
+                where subject == co.Subject & number == co.CourseNum
                 select co;
             uint courseID = query.ToArray()[0].CourseNum;
 

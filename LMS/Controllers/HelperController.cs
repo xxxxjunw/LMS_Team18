@@ -32,8 +32,6 @@ namespace LMS.Controllers
 
             int totalWeight = query.Sum(p => p.weight);
 
-            System.Diagnostics.Debug.WriteLine("weight " + totalWeight);
-
 
             double totalGrade = 0.0;
             foreach (var q in query)
@@ -41,7 +39,6 @@ namespace LMS.Controllers
                 var assignments = (from a in db.Assignments
                                    where a.CId == q.categoryID
                                    select a).ToArray();
-
                 int totalMaxPoint = 0;
                 int totalScore = 0;
                 foreach (var a in assignments)

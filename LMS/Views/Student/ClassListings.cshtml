@@ -72,15 +72,11 @@
     }
 
     function PopulateTable(tbl, offerings) {
-      var newBody = document.createElement("tbody");
+        var newBody = document.createElement("tbody");
 
-      //courses.sort(function (a, b) {
-      //  return parseInt(a.number) - parseInt(b.number);
-
-      //});
+        
 
         $.each(offerings, function (i, item) {
-            alert(i + item)
         var tr = document.createElement("tr");
 
         var td = document.createElement("td");
@@ -117,8 +113,7 @@
     function LoadData() {
 
       classname.innerText = 'Offerings of @ViewData["subject"] @ViewData["num"]';
-
-      var tbl = document.getElementById("tblClasses");
+      var tbl = document.getElementById("tblClasses")
 
       $.ajax({
         type: 'POST',
@@ -126,11 +121,7 @@
         dataType: 'json',
         data: { subject: '@ViewData["subject"]', number: Number('@ViewData["num"]') },
         success: function (data, status) {
-
-          PopulateTable(tbl, data);
-
-          //alert(JSON.stringify(data));
-
+            PopulateTable(tbl, data);
         },
         error: function (ex) {
           var r = jQuery.parseJSON(response.responseText);

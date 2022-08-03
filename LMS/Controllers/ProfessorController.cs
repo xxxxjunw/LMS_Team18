@@ -186,7 +186,7 @@ namespace LMS_CustomIdentity.Controllers
                     {
                         aname = q.a.Name,
                         cname = q.ac.Name,
-                        due = q.a.Due,
+                        due = q.a.Due.ToString(),
                         submissions = (from s in db.Submissions where s.AId == q.a.AId select s).Count()
                     };
                 return Json(query1.ToArray());
@@ -200,7 +200,7 @@ namespace LMS_CustomIdentity.Controllers
                     {
                         aname = q.a.Name,
                         cname = q.ac.Name,
-                        due = q.a.Due,
+                        due = q.a.Due.ToString(),
                         submissions = (from s in db.Submissions where s.AId == q.a.AId select s).Count()
                     };
                 return Json(query1.ToArray());
@@ -256,7 +256,8 @@ namespace LMS_CustomIdentity.Controllers
                 return Json(new { success = false });
 
             AssignmentCategory a = new AssignmentCategory();
-            a.CIdNavigation.CId = classID;
+            Console.WriteLine("Hello Nigel");
+            a.CId = classID;
             a.GradeWeight = catweight;
             a.Name = category;
             db.AssignmentCategories.Add(a);

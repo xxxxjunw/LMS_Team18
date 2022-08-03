@@ -7,7 +7,6 @@ namespace LMS.Models.LMSModels
     {
         public Department()
         {
-            Courses = new HashSet<Course>();
             Professors = new HashSet<Professor>();
             Students = new HashSet<Student>();
         }
@@ -15,7 +14,6 @@ namespace LMS.Models.LMSModels
         public string Subject { get; set; } = null!;
         public string Name { get; set; } = null!;
 
-        public virtual ICollection<Course> Courses { get; set; }
         public virtual ICollection<Professor> Professors { get; set; }
         public virtual ICollection<Student> Students { get; set; }
     }

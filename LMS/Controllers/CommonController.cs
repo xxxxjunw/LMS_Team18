@@ -92,8 +92,8 @@ namespace LMS.Controllers
                     season = cl.Semester,
                     year = cl.Year,
                     location = cl.Location,
-                    start = cl.StartDate,
-                    end = cl.EndDate,
+                    start = cl.StartDate.ToString(),
+                    end = cl.EndDate.ToString(),
                     fname = p.FirstName,
                     lname = p.LastName
                 };
@@ -124,7 +124,7 @@ namespace LMS.Controllers
                 where ac.CId == classID && ac.Name == category && a.Name == asgname
                 select a.Contents;
 
-            return Content(query.ToArray()[0]);
+            return Content(query.ToArray().Length == 0 ? null : query.ToArray()[0]);
         }
         public int getClassID(string subject, int num, string season, int year)
         {

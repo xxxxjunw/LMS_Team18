@@ -130,7 +130,7 @@ namespace LMS.Controllers
                 {
                     aname = q.Name,
                     cname = q.CIdNavigation.Name,
-                    due = q.Due,
+                    due = q.Due.ToString(),
                     score = j == null ? null : (int?)j.Score
                 };
 
